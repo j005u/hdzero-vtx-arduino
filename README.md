@@ -1,70 +1,26 @@
-# HDZero Arduino Library
+# Fake FC for MSP (DP) testing purposes using the Piduino library
 
-Arduino Library to interact with HDZero VTXes via serial port.
+This is a fork of https://github.com/hd-zero/hdzero-vtx-arduino (with additional changes from https://github.com/benlumley/hdzero-vtx-arduino/) to provide a fake MSP (DP) FC for testing purposes.
 
-![arduino_demo](https://user-images.githubusercontent.com/15615439/202908662-ba035698-c40f-4865-b21f-4e623e36fe30.gif)
+It has been ported to run on a Raspberry PI with the help of [Piduino](https://github.com/epsilonrt/piduino).
 
-## Features
+## Pre-requesites
 
-- easy to use api for transmission of fc variant, rc channels and armed state
-- simple drawing api
+First, install the Piduino libraries. On raspbian this can be achieved with:
 
-support for setting up VTX parameters (MSP VTX) is planned.
-
-## Example
-
-```cpp
-#include <Arduino.h>
-
-#include <hdzero.h>
-
-HDZero hdzero;
-
-void setup() {
-    // wait for serial to be ready
-    Serial2.begin(115200);
-    while (!Serial2)
-        ;
-
-    // setup and configure hdzero
-    hdzero.begin(Serial2);
-    hdzero.setFcVariant("INAV");
-    hdzero.setResolution(HD_5018);
-}
-
-uint32_t lastRefreshTime = 0;
-
-void loop() {
-    if (millis() - lastRefreshTime >= 500) {
-        hdzero.clear(); // clear the screen
-        hdzero.writeString(0, 10, 10, "HELLO ARDUINO!"); // write some text
-        hdzero.draw(); // draw everything out
-
-        lastRefreshTime = millis();
-    }
-
-    // updates the internal state, needs to be run every loop
-    hdzero.run();
-}
+```
+wget -O- http://www.piduino.org/piduino-key.asc | sudo apt-key add -
+echo 'deb http://raspbian.piduino.org stretch piduino' | sudo tee /etc/apt/sources.list.d/piduino.list
+sudo apt update
+sudo apt install libpiduino-dev piduino-utils
 ```
 
-## Debug Ouput
+## On serial ports
 
-You can enable debug output on `Serial` by configuring it in in `setup()`
+One has to adjust the serial port used by the Piduino library in `src/fakefc.cpp` according to one's setup. Please note that the port numbering provided by `pinfo` is not always accurate and some trial and error might be required.
 
-```cpp
-void setup() {
-    Serial.begin(115200);
-
-    Serial2.begin(115200);
-    hdzero.begin(Serial2);
-}
+## Compiling and running
 ```
-
-and defining `DEBUG_HDZERO` in your platfomio configuration
-
-```ini
-[env:myenv]
-build_flags =
-    -DDEBUG_HDZERO
+make
+./fakefc
 ```
