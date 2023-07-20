@@ -1,7 +1,8 @@
 #include "hdzero.h"
+#include <stdio.h>
 
 #ifdef DEBUG_HDZERO
-#define debug_printf(...) Serial.printf(__VA_ARGS__)
+#define debug_printf(...) printf(__VA_ARGS__)
 #else
 #define debug_printf(...)
 #endif
@@ -23,7 +24,7 @@ void HDZero::end() {
 
 void HDZero::setFcVariant(const char *variant) {
     int strLen = strlen(variant);
-    for (uint8_t i = 0; i < min(MSP_FC_VARIANT_SIZE, strLen); i++) {
+    for (uint8_t i = 0; i < std::min(MSP_FC_VARIANT_SIZE, strLen); i++) {
         fcVariant[i] = variant[i];
     }
 }
@@ -44,6 +45,10 @@ void HDZero::setAllRcChannels(uint16_t value) {
 
 void HDZero::setArmed(bool armed) {
     isArmed = armed;
+}
+
+bool HDZero::getArmed() {
+    return isArmed;
 }
 
 void HDZero::setResolution(HDZeroResolution value) {
@@ -116,6 +121,7 @@ void HDZero::sendSubCmd(uint8_t cmd, uint8_t *data, uint8_t size) {
 }
 
 void HDZero::handleMsp(uint8_t cmd, uint8_t *payload, uint8_t size) {
+    debug_printf("msp command %d (%d)\r\n", cmd, size);
     switch (cmd) {
     case MSP_FC_VARIANT:
         sendResponse(cmd, fcVariant, MSP_FC_VARIANT_SIZE);
@@ -183,7 +189,6 @@ void HDZero::run() {
     if (size == -1 || cmd == -1) {
         return;
     }
-
     uint8_t payload[size];
     uint8_t incoming_crc = (uint8_t)(size) ^ (uint8_t)(cmd);
     for (uint8_t i = 0; i < size; i++) {
